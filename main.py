@@ -4,6 +4,15 @@ from routes.user import user_router
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    
+    allow_methods=["*"],
+    allow_headers=["*"],
+
+)
+
 
 app.include_router(
     user_router,
@@ -14,13 +23,5 @@ app.include_router(
 @app.get("/")
 def default_route():
     return {"server status" : "ok"}
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 

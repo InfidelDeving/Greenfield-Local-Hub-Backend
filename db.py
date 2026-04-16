@@ -20,9 +20,15 @@ def to_object_id(id_str: str) -> ObjectId:
 
 
 # inverse of the previous function, converts ID from mongo to string and returns a clean document
-def serialize_doc(doc: dict) -> dict:
+def serialize_doc_item(doc: dict) -> dict:
     if not doc:
         return doc
     doc["_id"] = str(doc["_id"])
     doc["producer_id"] = str(doc["producer_id"])
+    return doc
+
+def serialize_doc_user(doc: dict) -> dict:
+    if not doc:
+        return doc
+    doc["_id"] = str(doc["_id"])
     return doc

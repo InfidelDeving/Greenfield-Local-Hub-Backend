@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from models.user import  AddUser, AddUserResponse, LoginUser, LoginUserResponse, Item, AddItem, AddItemResponse, UpdateUserCustomer, UpdateUserProducer, Producer
-from db import db, to_object_id, serialize_doc, users_collection, items_collection
+from db import db, to_object_id, serialize_doc_item, serialize_doc_user, users_collection, items_collection
 from security import hash_password, verify_password
 from bson import ObjectId
 
@@ -46,30 +46,64 @@ def login_user(details: LoginUser):
     if not user or not verify_password(details.password ,user["password"]):
         raise HTTPException(status_code=401, detail="Email or password is incorrect")
 
+    if "basket" not in user:
+        user["basket"] = {}
 
     return LoginUserResponse(status_code=200, msg="Successfully authenticated", email=user["email"], id=str(user["_id"]), basket=user["basket"])
 
 
-# @user_router.post("/updatebasket")
-# def update_basket(id: str, basket: dict):
-#     user = users_collection.find_one({"_id": id})
-
 
 
 @user_router.get("/items")
-def get_all():
+def get_all_items():
 
     cursor = items_collection.find()
 
     items = []
     for doc in cursor:
-        serialized = serialize_doc(doc)
+        serialized = serialize_doc_item(doc)
         items.append(serialized)
-
-    print(items)
 
     return {"items": items, "lenght": len(items)}
 
+
+@user_router.get("/itemslimit")
+def get_five_items():
+
+    cursor = items_collection.find().limit(5)
+
+    items = []
+    for doc in cursor:
+        serialized = serialize_doc_item(doc)
+        items.append(serialized)
+
+    return {"items": items, "length": len(items)}
+
+
+@user_router.get("/producers")
+def get_all_producers():
+
+    cursor = users_collection.find({"account_type": "producer"})
+
+    producers = []
+    for doc in cursor:
+        serialized = serialize_doc_user(doc)
+        producers.append(serialized)
+
+    return {"producers": producers, "length": len(producers)}
+
+
+@user_router.get("/producerslimit")
+def get_five_producers():
+
+    cursor = users_collection.find({"account_type": "producer"}).limit(5)
+
+    producers = []
+    for doc in cursor:
+        serialized = serialize_doc_user(doc)
+        producers.append(serialized)
+
+    return {"producers": producers, "length": len(producers)}
 
 
 @user_router.post("/additem", response_model=AddItemResponse)
@@ -97,4 +131,5 @@ def add_item(item_details: AddItem, producer_id: str):
         _id=str(item_result.inserted_id), 
         item_name=item_details.item_name
     )
+
 

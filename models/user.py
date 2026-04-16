@@ -35,7 +35,7 @@ class Customer(BaseModel):
     _id: str
     email: str
     password: str
-    basket: list
+    basket: Optional[list] = None
 
 class Producer(BaseModel):
     _id: str
@@ -63,6 +63,7 @@ class AddItem(BaseModel):
     item_name: str
     description: str
     image: str
+    stock_available: int
 
 
 class AddItemResponse(BaseResponseModel):
