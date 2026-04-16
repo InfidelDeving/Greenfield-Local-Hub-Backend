@@ -45,8 +45,32 @@ def login_user(details: LoginUser):
     user = users_collection.find_one({"email": details.email})
     if not user or not verify_password(details.password ,user["password"]):
         raise HTTPException(status_code=401, detail="Email or password is incorrect")
-    
-    return LoginUserResponse(status_code=200, msg="Successfully authenticated", _id=str(user["_id"]), email=user["email"])
+
+
+    return LoginUserResponse(status_code=200, msg="Successfully authenticated", email=user["email"], id=str(user["_id"]), basket=user["basket"])
+
+
+# @user_router.post("/updatebasket")
+# def update_basket(id: str, basket: dict):
+#     user = users_collection.find_one({"_id": id})
+
+
+
+@user_router.get("/items")
+def get_all():
+
+    cursor = items_collection.find()
+
+    items = []
+    for doc in cursor:
+        serialized = serialize_doc(doc)
+        items.append(serialized)
+
+    print(items)
+
+    return {"items": items, "lenght": len(items)}
+
+
 
 @user_router.post("/additem", response_model=AddItemResponse)
 def add_item(item_details: AddItem, producer_id: str):

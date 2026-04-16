@@ -21,8 +21,9 @@ class LoginUser(BaseModel):
     password: str
 
 class LoginUserResponse(BaseResponseModel):
-    _id: str
+    id: str
     email: str
+    basket: dict
 
 
 class UpdateUserCustomer:
@@ -61,6 +62,7 @@ class AddItem(BaseModel):
     weight: int # IN GRAMS
     item_name: str
     description: str
+    image: str
 
 
 class AddItemResponse(BaseResponseModel):
