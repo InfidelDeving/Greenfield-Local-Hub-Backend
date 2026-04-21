@@ -40,6 +40,7 @@ class Customer(BaseModel):
     basket: Optional[list] = None
     account_type: Literal["customer", "producer"]
     first_login: bool
+    orders: list
 
 class Producer(BaseModel):
     _id: str
@@ -53,6 +54,7 @@ class Producer(BaseModel):
     production_site_address_3: Optional[str] = None
     account_type: Literal["customer", "producer"]
     first_login: bool
+    orders: list
 
 class Item(BaseModel):
     _id: str
@@ -76,9 +78,17 @@ class AddItemResponse(BaseResponseModel):
     _id: str
     item_name: str
 
+class AddOrderResponse(BaseResponseModel):
+    _id: str
+    customer_id: str
+    producers: list #list of producer Ids
+    items: list #[[id, quantity]]
+
+
 
 class UpdateUserProducer(BaseModel):
     email: Optional[str] = None
+    profile_image: Optional[str] = None
     password: Optional[str] = None
     confirm_password: Optional[str] = None
     full_name: Optional[str] = None

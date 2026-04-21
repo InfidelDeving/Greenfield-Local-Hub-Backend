@@ -36,6 +36,7 @@ def add_user(user: AddUser):
 
     user_dict["password"] = hash_password(user_dict["password"])
     user_dict["first_login"] = True
+    user_dict["orders"] = []
     user_result = users_collection.insert_one(user_dict)
     id = str(user_result.inserted_id)
     return AddUserResponse(status_code=201, msg="Account successfully created", email=user_dict["email"], account_type=user_dict["account_type"])
@@ -46,6 +47,8 @@ def login_user(details: LoginUser):
     user = users_collection.find_one({"email": details.email})
     if not user or not verify_password(details.password ,user["password"]):
         raise HTTPException(status_code=401, detail="Email or password is incorrect")
+
+
 
     if user["first_login"] == True:
         users_collection.update_one(
@@ -141,3 +144,46 @@ def add_item(item_details: AddItem, producer_id: str):
     )
 
 
+@user_router.patch("/updateproducer/{id}")
+def update_producer(id: str, updates: UpdateUserProducer):
+    object_id = to_object_id(id)
+
+    existing_user = users_collection.find_one({"_id": object_id})
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+    # Extract only the fields sent in the request
+    update_data = updates.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+
+    # Password Validation
+    if "password" in update_data:
+        validate_password(update_data["password"])
+        if "confirm_password" not in update_data:
+            raise HTTPException(status_code=400, detail="No confirm password")
+        if update_data["password"] != update_data["confirm_password"]:
+            raise HTTPException(status_code=400, detail="Password and confirmation password differ")
+        
+        update_data["password"] = hash_password(update_data["password"])
+
+        update_data.pop("confirm_password", None)
+
+
+    result = users_collection.update_one(
+        {"_id": object_id}, {"$set": update_data}
+    )
+
+    updated_doc = users_collection.find_one({"_id": object_id})
+    
+    return {
+        "message": "User updated",
+        "matched_count": result.matched_count,
+        "modified_count": result.modified_count,
+        "item": serialize_doc_user(updated_doc),
+    }
+
+@user_router.post("/order", response_model=AddUserResponse)
+def add_order(item_id: str, user_id:str):
+    pass
