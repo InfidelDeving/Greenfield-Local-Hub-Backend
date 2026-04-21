@@ -13,8 +13,8 @@ class AddUser(BaseModel):
 
 class AddUserResponse(BaseResponseModel):
     email: str
-    password: str
     account_type: Literal["customer", "producer"]
+    
 
 class LoginUser(BaseModel):
     email: str
@@ -24,6 +24,8 @@ class LoginUserResponse(BaseResponseModel):
     id: str
     email: str
     basket: dict
+    account_type: Literal["customer", "producer"]
+    first_login: bool
 
 
 class UpdateUserCustomer:
@@ -36,6 +38,8 @@ class Customer(BaseModel):
     email: str
     password: str
     basket: Optional[list] = None
+    account_type: Literal["customer", "producer"]
+    first_login: bool
 
 class Producer(BaseModel):
     _id: str
@@ -47,6 +51,8 @@ class Producer(BaseModel):
     production_site_address_1: Optional[str] = None
     production_site_address_2: Optional[str] = None
     production_site_address_3: Optional[str] = None
+    account_type: Literal["customer", "producer"]
+    first_login: bool
 
 class Item(BaseModel):
     _id: str

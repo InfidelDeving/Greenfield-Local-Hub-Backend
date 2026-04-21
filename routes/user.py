@@ -17,7 +17,7 @@ def validate_password(password: str):
     
     if is_special and len(password) >= 8:
         pass
-    else: raise HTTPException(status_code=406, detail="Password does not meet criteria")
+    else: raise HTTPException(status_code=406, detail=f"Password must be at least 8 characters long and include one of the following: {special_chars}")
     
 
     
@@ -35,9 +35,10 @@ def add_user(user: AddUser):
     else: user_dict.pop("confirm_password", None)
 
     user_dict["password"] = hash_password(user_dict["password"])
+    user_dict["first_login"] = True
     user_result = users_collection.insert_one(user_dict)
     id = str(user_result.inserted_id)
-    return AddUserResponse(status_code=201, msg="Account successfully created", email=user_dict["email"], password=user_dict["password"], account_type=user_dict["account_type"])
+    return AddUserResponse(status_code=201, msg="Account successfully created", email=user_dict["email"], account_type=user_dict["account_type"])
 
 
 @user_router.post("/login", response_model=LoginUserResponse)
@@ -46,10 +47,17 @@ def login_user(details: LoginUser):
     if not user or not verify_password(details.password ,user["password"]):
         raise HTTPException(status_code=401, detail="Email or password is incorrect")
 
+    if user["first_login"] == True:
+        users_collection.update_one(
+            {"email": user["email"]},
+            {"$set": {"first_login": False}}
+    )
+
+
     if "basket" not in user:
         user["basket"] = {}
 
-    return LoginUserResponse(status_code=200, msg="Successfully authenticated", email=user["email"], id=str(user["_id"]), basket=user["basket"])
+    return LoginUserResponse(status_code=200, msg="Successfully authenticated", email=user["email"], id=str(user["_id"]), basket=user["basket"], account_type=user["account_type"], first_login=user.get("first_login", False))
 
 
 
